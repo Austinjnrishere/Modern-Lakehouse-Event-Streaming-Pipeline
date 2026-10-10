@@ -25,8 +25,8 @@ jobs:
           pip install requests duckdb dbt-duckdb
 
       - name: Run Event Producer (Seed Data)
-        run: |
-          python producer.py
+        working-directory: ./transform_github_events
+        run: python producer.py
 
       - name: Set CI Schema Name
         run: |
@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Run dbt Debug & Build in CI Schema
+        working-directory: ./transform_github_events
         run: |
-          cd transform_github_events
           dbt debug
           dbt build
