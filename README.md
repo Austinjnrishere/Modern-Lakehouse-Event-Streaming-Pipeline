@@ -105,8 +105,7 @@ Python 3.10+
 Git
 
 2. Setup Virtual Environment
-git clone https://github.com/YOUR_USERNAME/lakehouse-event-stream.git
-cd lakehouse-event-stream
+git clone (https://github.com/Austinjnrishere/Modern-Lakehouse-Event-Streaming-Pipeline)
 
 python -m venv venv
 # On Windows:
@@ -123,7 +122,7 @@ python producer.py
 
 4. Execute dbt Pipeline
 Navigate to the dbt project and run transformations & quality tests:
-cd transform_github_events
+
 
 # Run models locally against dev environment
 dbt build
