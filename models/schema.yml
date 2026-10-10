@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_github_events
+    description: "Cleaned and parsed GitHub stream events from DuckDB landing table"
+    columns:
+      - name: event_id
+        description: "Primary key for each GitHub event"
+        tests:
+          - unique
+          - not_null
+
+      - name: event_type
+        tests:
+          - not_null
+
+  - name: fct_github_daily_metrics
+    description: "Daily aggregated activity metrics per repository"
+    columns:
+      - name: repo_name
+        tests:
+          - not_null
+
+      - name: total_events
+        tests:
+          - not_null
