@@ -14,14 +14,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # MOVED DEBUG TO THE TOP SO IT ALWAYS RUNS
-      - name: Debug - List files
-        run: |
-          pwd
-          ls -la
-          find . -name "producer.py"
-          find . -name "dbt_project.yml"
-
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -43,6 +35,19 @@ jobs:
           else
             echo "DBT_TARGET_SCHEMA=ci_commit_${{ github.sha }}" >> $GITHUB_ENV
           fi
+
+      - name: Create profiles.yml for CI
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          transform_github_events:
+            target: dev
+            outputs:
+              dev:
+                type: duckdb
+                path: events_lakehouse.duckdb
+                schema: "{{ env_var('DBT_TARGET_SCHEMA', 'main') }}"
+          EOF
 
       - name: Run dbt Debug & Build in CI Schema
         run: |
