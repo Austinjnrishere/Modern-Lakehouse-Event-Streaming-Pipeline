@@ -7,9 +7,23 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
+# Required for deploying to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent multiple simultaneous deployments to Pages
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   deploy-and-run:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Check out production code
@@ -19,7 +33,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip' # Optional: speeds up workflow by caching pip downloads
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -30,7 +44,6 @@ jobs:
         run: |
           python producer.py
 
-      # NEW STEP: Create the profiles.yml dynamically for Linux runner
       - name: Create profiles.yml for Production
         run: |
           mkdir -p ~/.dbt
@@ -52,8 +65,27 @@ jobs:
         run: |
           dbt build --target prod
 
+      # NEW STEP: Generate the dbt documentation
+      - name: Generate dbt Documentation
+        run: |
+          dbt docs generate --target prod
+
       - name: Store Production DuckDB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: production-duckdb-db
           path: events_lakehouse.duckdb
+
+      # --- GitHub Pages Deployment Steps ---
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # dbt puts its generated docs in the 'target' folder
+      - name: Upload dbt Docs as Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './target' 
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
