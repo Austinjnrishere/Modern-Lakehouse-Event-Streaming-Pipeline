@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip' # Optional: speeds up workflow by caching pip downloads
 
       - name: Install dependencies
         run: |
@@ -29,9 +30,26 @@ jobs:
         run: |
           python producer.py
 
+      # NEW STEP: Create the profiles.yml dynamically for Linux runner
+      - name: Create profiles.yml for Production
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          transform_github_events:
+            target: prod
+            outputs:
+              dev:
+                type: duckdb
+                path: events_lakehouse.duckdb
+                schema: main
+              prod:
+                type: duckdb
+                path: events_lakehouse.duckdb
+                schema: prod
+          EOF
+
       - name: Execute dbt Build in Production Schema
         run: |
-          cd transform_github_events
           dbt build --target prod
 
       - name: Store Production DuckDB Artifact
