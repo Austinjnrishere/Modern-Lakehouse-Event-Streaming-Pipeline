@@ -14,6 +14,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # MOVED DEBUG TO THE TOP SO IT ALWAYS RUNS
+      - name: Debug - List files
+        run: |
+          pwd
+          ls -la
+          find . -name "producer.py"
+          find . -name "dbt_project.yml"
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -38,11 +46,5 @@ jobs:
 
       - name: Run dbt Debug & Build in CI Schema
         run: |
-          cd transform_github_events
           dbt debug
           dbt build
-            - name: Debug - List files
-        run: |
-          pwd
-          ls -la
-          find . -name "producer.py"
